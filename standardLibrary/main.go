@@ -10,8 +10,8 @@ import (
 )
 
 type Comment struct {
-    Message string `validate:"required,min=1,max=140"`
-    UserName string `validate:"required,min=1,max=15"`
+	Message  string `validate:"required,min=1,max=140"`
+	UserName string `validate:"required,min=1,max=15"`
 }
 
 type User struct {
@@ -25,49 +25,49 @@ var users = []User{
 	// Add more users as needed
 }
 
-func main(){
+func main() {
 
-    var mutex = &sync.RWMutex{}
-    comments := make([]Comment,0,100)
+	var mutex = &sync.RWMutex{}
+	comments := make([]Comment, 0, 100)
 
-    http.HandleFunc("/comments",func(w http.ResponseWriter, r *http.Request) {
-        w.Header().Set("Content-Type","application/json")
+	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
 
-        switch r.Method{
-            
-        case http.MethodGet:
-            mutex.RLock()
+		switch r.Method {
 
-            if err := json.NewEncoder(w).Encode(comments); err != nil {
-                http.Error(w,fmt.Sprintf(`{"status":"%s"}`,err),http.StatusInternalServerError)
-                return
-            }
-            mutex.RUnlock()
+		case http.MethodGet:
+			mutex.RLock()
 
-        case http.MethodPost:
-            var c Comment
-            if err := json.NewDecoder(r.Body).Decode(&c); err != nil{
-                http.Error(w,fmt.Sprintf(`{"status":"%s"}`,err),http.StatusInternalServerError)
-                return
-            }
-            validate := validator.New()
-            if err:=validate.Struct(c); err != nil{
-                http.Error(w,fmt.Sprintf(`{"status":"%s"}`,err),http.StatusBadRequest)
-                return
-            }
-            mutex.Lock()
-            comments = append(comments, c)
-            mutex.Unlock()
+			if err := json.NewEncoder(w).Encode(comments); err != nil {
+				http.Error(w, fmt.Sprintf(`{"status":"%s"}`, err), http.StatusInternalServerError)
+				return
+			}
+			mutex.RUnlock()
 
-            w.WriteHeader(http.StatusCreated)
-            w.Write([]byte(`{"status":"created"}`))
+		case http.MethodPost:
+			var c Comment
+			if err := json.NewDecoder(r.Body).Decode(&c); err != nil {
+				http.Error(w, fmt.Sprintf(`{"status":"%s"}`, err), http.StatusInternalServerError)
+				return
+			}
+			validate := validator.New()
+			if err := validate.Struct(c); err != nil {
+				http.Error(w, fmt.Sprintf(`{"status":"%s"}`, err), http.StatusBadRequest)
+				return
+			}
+			mutex.Lock()
+			comments = append(comments, c)
+			mutex.Unlock()
 
-        default:
-            http.Error(w,`{"status":"permits only GET or POST"}`, http.StatusMethodNotAllowed)
-        }
-    })
+			w.WriteHeader(http.StatusCreated)
+			w.Write([]byte(`{"status":"created"}`))
 
-    http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
+		default:
+			http.Error(w, `{"status":"permits only GET or POST"}`, http.StatusMethodNotAllowed)
+		}
+	})
+
+	http.HandleFunc("/users", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")
 
 		switch r.Method {
@@ -82,6 +82,5 @@ func main(){
 			http.Error(w, `{"status":"permits only GET"}`, http.StatusMethodNotAllowed)
 		}
 	})
-    http.ListenAndServe(":8888",nil)
+	http.ListenAndServe(":8888", nil)
 }
-
