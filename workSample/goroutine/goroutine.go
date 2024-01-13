@@ -1,4 +1,4 @@
-package goroutine
+package main
 
 import (
 	"fmt"
@@ -22,7 +22,7 @@ func task2(wg *sync.WaitGroup) {
 	}
 }
 
-func GoroutineSample() {
+func main() {
 	fmt.Println("mainのスタート")
 
 	var wg sync.WaitGroup
