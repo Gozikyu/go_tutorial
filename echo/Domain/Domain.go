@@ -7,7 +7,7 @@ import (
 
 type UserId int
 
-func GenUserId(userId int) (UserId, error) {
+func NewUserId(userId int) (UserId, error) {
 	if userId <= 0 {
 		return 0, errors.New("ユーザーIDは1以上である必要があります")
 	}
@@ -16,17 +16,28 @@ func GenUserId(userId int) (UserId, error) {
 
 type Email string
 
-func GenEmail(email string) (Email, error) {
+func NewEmail(email string) (Email, error) {
 	if len(email) == 0 {
 		return "", errors.New("メールアドレスには値が必要です")
 	}
 	return Email(email), nil
 }
 
-func GenUser(userId UserId, email Email, userType string, isEmailConfirmed bool) (User, error) {
-	return User{
-		UserId:           userId,
-		Email:            email,
+func NewUser(userId int, email string, userType string, isEmailConfirmed bool) (*User, error) {
+
+	validatedUserId, error := NewUserId(userId)
+	if error != nil {
+		return nil, errors.New("ユーザーIDとして適切な値ではありません")
+	}
+
+	validatedEmail, error := NewEmail(email)
+	if error != nil {
+		return nil, errors.New("メールアドレスとして適切な値ではありません")
+	}
+
+	return &User{
+		UserId:           validatedUserId,
+		Email:            validatedEmail,
 		UserType:         userType,
 		IsEmailConfirmed: isEmailConfirmed,
 	}, nil
@@ -44,22 +55,24 @@ func (u *User) UpdateProfile(email Email, company *Company) error {
 		return errors.New("メールアドレスが認証済みである必要があります")
 	}
 
-	newType, error := company.getUserTypeByEmail(u.Email)
+	newType, error := company.getUserTypeByEmail(email)
 	if error != nil {
 		return errors.New("アップデートに失敗しました")
 	}
 
-	u.UserType = newType
+	u.Email = email
 
 	if newType == u.UserType {
 		return nil
 	}
 
+	u.UserType = newType
+
 	if newType == "EMPLOYEE" {
 		company.NumberOfEmployees++
 	}
 	if newType == "CUSTOMER" {
-		company.NumberOfEmployees++
+		company.NumberOfEmployees--
 	}
 	return nil
 }
@@ -67,14 +80,14 @@ func (u *User) UpdateProfile(email Email, company *Company) error {
 type NumberOfEmployees int
 type CompanyDomainName string
 
-func GenNumberOfEmployees(number int) (NumberOfEmployees, error) {
+func NewNumberOfEmployees(number int) (NumberOfEmployees, error) {
 	if number < 0 {
 		return 0, errors.New("従業員数として適切な値ではありません")
 	}
 	return NumberOfEmployees(number), nil
 }
 
-func GenCompanyDomainName(name string) (CompanyDomainName, error) {
+func NewCompanyDomainName(name string) (CompanyDomainName, error) {
 	if !strings.Contains(name, "@") {
 		return "", errors.New("ドメイン名には@が含まれている必要があります")
 	}
@@ -85,6 +98,20 @@ func GenCompanyDomainName(name string) (CompanyDomainName, error) {
 type Company struct {
 	NumberOfEmployees NumberOfEmployees
 	CompanyDomainName CompanyDomainName
+}
+
+func NewCompany(numberOfEmployees int, companyDomainName string) (*Company, error) {
+	validatedNumberOfEmployees, error := NewNumberOfEmployees(numberOfEmployees)
+	if error != nil {
+		return nil, errors.New("従業員数として適切な値ではありません")
+	}
+
+	validatedCompanyDomainName, error := NewCompanyDomainName(companyDomainName)
+	if error != nil {
+		return nil, errors.New("ドメイン名として適切な値ではありません")
+	}
+
+	return &Company{NumberOfEmployees: validatedNumberOfEmployees, CompanyDomainName: validatedCompanyDomainName}, nil
 }
 
 func (c *Company) IncreaseEmployeeCount() {
@@ -101,6 +128,7 @@ func (c Company) getUserTypeByEmail(email Email) (string, error) {
 	}
 
 	emailDomain := CompanyDomainName(strings.Split(string(email), "@")[1])
+
 	if emailDomain == c.CompanyDomainName {
 		return "EMPLOYEE", nil
 	}
