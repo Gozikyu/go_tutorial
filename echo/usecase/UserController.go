@@ -4,10 +4,21 @@ import (
 	"errors"
 	"fmt"
 	"go_tutorial/echo/Domain"
-	"go_tutorial/echo/Infra"
 )
 
-func UserController(userId int, newEmail string) error {
+type userRepository Domain.IUserRepository
+type companyRepository Domain.ICompanyRepository
+
+type UserControllerType struct {
+	userRepository    Domain.IUserRepository
+	companyRepository Domain.ICompanyRepository
+}
+
+func NewUserController(ur Domain.IUserRepository, cr Domain.ICompanyRepository) UserControllerType {
+	return UserControllerType{userRepository: ur, companyRepository: cr}
+}
+
+func (u *UserControllerType) ChangeEmail(userId int, newEmail string) error {
 	fmt.Println("usecase開始")
 
 	validatedNewEmail, error := Domain.NewEmail(newEmail)
@@ -16,15 +27,16 @@ func UserController(userId int, newEmail string) error {
 		return errors.New("メールアドレスとして適切な値ではありません")
 	}
 
-	database := Infra.NewDatabase()
-
-	//チェックしていないerrorをどう気づくか
-	registeredUser, error := database.GetUserById(userId)
-	if error != nil {
-		return errors.New("ユーザーの取得に失敗しました")
+	DomainUserId, err := Domain.NewUserId(userId)
+	if err != nil {
+		return errors.New("userIdの変換に失敗しました")
 	}
 
-	user, error := Domain.NewUser(registeredUser.UserId, registeredUser.Email, registeredUser.UserType, registeredUser.IsEmailConfirmed)
+	//チェックしていないerrorをどう気づくか
+	user, err := u.userRepository.GetUserById(DomainUserId)
+	if err != nil {
+		return errors.New("userの取得に失敗しました")
+	}
 
 	//現在のメールアドレスと更新するメールアドレスが同じ場合は何もせずに終了
 	if user.Email == validatedNewEmail {
@@ -32,28 +44,34 @@ func UserController(userId int, newEmail string) error {
 	}
 
 	//本来はDBから取得する
-	registeredCompany := database.GetCompany()
-
-	company, error := Domain.NewCompany(registeredCompany.NumberOfEmployees, registeredCompany.CompanyDomainName)
+	company, err := u.companyRepository.GetCompany()
+	if err != nil {
+		return errors.New("companyの取得に失敗しました")
+	}
 
 	if error != nil {
 		return errors.New("カンパニーの取得に失敗しました")
 	}
 
 	//ロジックがあっているか確認
-	error = user.UpdateProfile(Domain.Email(newEmail), company)
+	error = user.UpdateProfile(Domain.Email(newEmail), &company)
 
 	if error != nil {
 		return errors.New("情報の更新に失敗しました")
 	}
 
 	//DBに更新後の保存をする
-	database.SaveUser(*user)
-	database.SaveCompany(*company)
+	u.userRepository.SaveUser(user)
+	u.companyRepository.SaveCompany(company)
 
 	//メールを送信する
 
 	fmt.Println("usecase終了")
 
 	return nil
+
+}
+
+func NewUserControllerType(ur userRepository, cr companyRepository) *UserControllerType {
+	return &UserControllerType{userRepository: ur, companyRepository: cr}
 }

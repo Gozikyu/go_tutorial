@@ -135,3 +135,14 @@ func (c Company) getUserTypeByEmail(email Email) (string, error) {
 
 	return "CUSTOMER", nil
 }
+
+// インターフェイス
+type IUserRepository interface {
+	GetUserById(userId UserId) (User, error)
+	SaveUser(user User)
+}
+
+type ICompanyRepository interface {
+	GetCompany() (Company, error)
+	SaveCompany(company Company)
+}
