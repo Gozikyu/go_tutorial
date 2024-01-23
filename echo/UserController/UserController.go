@@ -19,7 +19,7 @@ func NewUserController(ur Domain.IUserRepository, cr Domain.ICompanyRepository) 
 }
 
 func (u *UserControllerType) ChangeEmail(userId int, newEmail string) error {
-	fmt.Println("usecase開始")
+	fmt.Println("メールアドレス変更開始")
 
 	validatedNewEmail, error := Domain.NewEmail(newEmail)
 
@@ -64,9 +64,7 @@ func (u *UserControllerType) ChangeEmail(userId int, newEmail string) error {
 	u.userRepository.SaveUser(user)
 	u.companyRepository.SaveCompany(company)
 
-	//メールを送信する
-
-	fmt.Println("usecase終了")
+	fmt.Println("メールアドレス変更終了")
 
 	return nil
 

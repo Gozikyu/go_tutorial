@@ -9,11 +9,11 @@ import (
 
 // UserRepository は IUserRepository インターフェースを実装するデータアクセスクラスです。
 type UserRepository struct {
-	Database ExternalServices.Database
+	Database *ExternalServices.Database
 }
 
 // NewUserRepository は新しい UserRepository インスタンスを作成します。
-func NewUserRepository(db ExternalServices.Database) *UserRepository {
+func NewUserRepository(db *ExternalServices.Database) *UserRepository {
 	return &UserRepository{
 		Database: db,
 	}

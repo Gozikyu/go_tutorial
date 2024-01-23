@@ -63,17 +63,21 @@ func (u *User) UpdateProfile(email Email, company *Company) error {
 	u.Email = email
 
 	if newType == u.UserType {
+		u.IsEmailConfirmed = false
 		return nil
 	}
 
 	u.UserType = newType
 
 	if newType == "EMPLOYEE" {
-		company.NumberOfEmployees++
+		company.IncreaseEmployeeCount()
 	}
 	if newType == "CUSTOMER" {
-		company.NumberOfEmployees--
+		company.DecreaseEmployeeCount()
 	}
+
+	u.IsEmailConfirmed = false
+
 	return nil
 }
 
@@ -88,8 +92,8 @@ func NewNumberOfEmployees(number int) (NumberOfEmployees, error) {
 }
 
 func NewCompanyDomainName(name string) (CompanyDomainName, error) {
-	if !strings.Contains(name, "@") {
-		return "", errors.New("ドメイン名には@が含まれている必要があります")
+	if len(name) == 0 {
+		return "", errors.New("ドメイン名は空文字ではいけません")
 	}
 	return CompanyDomainName(name), nil
 }

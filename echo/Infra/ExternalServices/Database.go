@@ -69,7 +69,11 @@ func (db *Database) SaveUser(user map[string]string) {
 	if db.Users == nil {
 		db.Users = make(map[int]map[string]string)
 	}
-	db.Users[userID(user)] = user
+	db.Users[userID(user)] = map[string]string{
+		"email":            user["email"],
+		"userType":         user["userType"],
+		"isEmailConfirmed": user["isEmailConfirmed"],
+	}
 }
 
 // userID はユーザーマップからユーザーIDを取得します。

@@ -8,10 +8,10 @@ import (
 )
 
 type CompanyRepository struct {
-	Database ExternalServices.Database
+	Database *ExternalServices.Database
 }
 
-func NewCompanyRepository(db ExternalServices.Database) *CompanyRepository {
+func NewCompanyRepository(db *ExternalServices.Database) *CompanyRepository {
 	return &CompanyRepository{
 		Database: db,
 	}
