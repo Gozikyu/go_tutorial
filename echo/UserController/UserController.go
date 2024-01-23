@@ -67,6 +67,20 @@ func (u *UserControllerType) ChangeEmail(userId int, newEmail string) error {
 	fmt.Println("メールアドレス変更終了")
 
 	return nil
+}
+
+func (u *UserControllerType) GetUser(userId int) (*Domain.User, error) {
+	id, err := Domain.NewUserId(userId)
+	if err != nil {
+		return &Domain.User{}, errors.New("userIdへの変換に失敗しました")
+	}
+
+	user, err := u.userRepository.GetUserById(id)
+	if err != nil {
+		return &Domain.User{}, errors.New("userの取得に失敗しました")
+	}
+
+	return &user, nil
 
 }
 

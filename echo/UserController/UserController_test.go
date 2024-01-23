@@ -8,24 +8,9 @@ import (
 	"testing"
 )
 
-func SetupTestDatabase() *ExternalServices.Database {
-	db := ExternalServices.Database{
-		Users:   make(map[int]map[string]string),
-		Company: make(map[string]string),
-	}
-
-	db.Users[1] = ExternalServices.NewDummyUser("user1@customer.com", "CUSTOMER", true)
-	db.Users[2] = ExternalServices.NewDummyUser("user2@company.com", "EMPLOYEE", true)
-	db.Users[3] = ExternalServices.NewDummyUser("user3@customer.com", "CUSTOMER", false)
-
-	db.Company = ExternalServices.NewDummyCompany(3, "company.com")
-
-	return &db
-}
-
 func TestMain(t *testing.T) {
 	t.Run("customerからcompanyへの変更", func(t *testing.T) {
-		db := SetupTestDatabase()
+		db := ExternalServices.SetupTestDatabase()
 
 		userRepository := Infra.NewUserRepository(db)
 		companyRepository := Infra.NewCompanyRepository(db)
@@ -58,7 +43,7 @@ func TestMain(t *testing.T) {
 	})
 
 	t.Run("customerから変化なし", func(t *testing.T) {
-		db := SetupTestDatabase()
+		db := ExternalServices.SetupTestDatabase()
 
 		userRepository := Infra.NewUserRepository(db)
 		companyRepository := Infra.NewCompanyRepository(db)
@@ -91,7 +76,7 @@ func TestMain(t *testing.T) {
 	})
 
 	t.Run("companyからcustomerへの変化", func(t *testing.T) {
-		db := SetupTestDatabase()
+		db := ExternalServices.SetupTestDatabase()
 
 		userRepository := Infra.NewUserRepository(db)
 		companyRepository := Infra.NewCompanyRepository(db)
@@ -124,7 +109,7 @@ func TestMain(t *testing.T) {
 	})
 
 	t.Run("メールアドレスが既存と同じ", func(t *testing.T) {
-		db := SetupTestDatabase()
+		db := ExternalServices.SetupTestDatabase()
 
 		userRepository := Infra.NewUserRepository(db)
 		companyRepository := Infra.NewCompanyRepository(db)

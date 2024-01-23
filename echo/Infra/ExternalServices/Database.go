@@ -90,3 +90,19 @@ func (db *Database) GetCompany() map[string]string {
 func (db *Database) SaveCompany(newCompany map[string]string) {
 	db.Company = newCompany
 }
+
+// インメモリのダミーデータベースを作成するヘルパー関数
+func SetupTestDatabase() *Database {
+	db := Database{
+		Users:   make(map[int]map[string]string),
+		Company: make(map[string]string),
+	}
+
+	db.Users[1] = NewDummyUser("user1@customer.com", "CUSTOMER", true)
+	db.Users[2] = NewDummyUser("user2@company.com", "EMPLOYEE", true)
+	db.Users[3] = NewDummyUser("user3@customer.com", "CUSTOMER", false)
+
+	db.Company = NewDummyCompany(3, "company.com")
+
+	return &db
+}
